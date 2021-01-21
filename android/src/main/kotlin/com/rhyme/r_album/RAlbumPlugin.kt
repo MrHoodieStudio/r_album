@@ -73,34 +73,38 @@ public class RAlbumPlugin : FlutterPlugin, MethodCallHandler {
                 rootFile.mkdirs()
             }
 
-            var resultPaths = mutableListOf<String>()
+            if(rootFile.exists()){
+                var resultPaths = mutableListOf<String>()
 
-            for (path in filePaths) {
-                val suffix: String = path.substring(path.lastIndexOf(".") + 1)
-                val itemFile = File(rootFile, "${System.currentTimeMillis()}.$suffix")
-                if (!itemFile.exists()) itemFile.createNewFile()
+                for (path in filePaths) {
+                    //val suffix: String = path.substring(path.lastIndexOf(".") + 1)
+                    val itemFile = File(rootFile, "${System.currentTimeMillis()}.jpg")
+                    if (!itemFile.exists()) itemFile.createNewFile()
 
-                val outPut = itemFile.outputStream()
-                val inPut = FileInputStream(path)
-                val buf = ByteArray(1024)
-                var len = 0
-                while (true) {
-                    len = inPut.read(buf)
-                    if (len == -1) break
-                    outPut.write(buf, 0, len)
+                    val outPut = itemFile.outputStream()
+                    val inPut = FileInputStream(path)
+                    val buf = ByteArray(1024)
+                    var len = 0
+                    while (true) {
+                        len = inPut.read(buf)
+                        if (len == -1) break
+                        outPut.write(buf, 0, len)
+                    }
+                    outPut.flush()
+                    outPut.close()
+
+                    inPut.close()
+                    resultPaths.add(itemFile.absolutePath)
+                    handler.post {
+                        context!!.sendBroadcast(Intent(ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(itemFile)))
+                    }
                 }
-                outPut.flush()
-                outPut.close()
-
-                inPut.close()
-                resultPaths.add(itemFile.absolutePath)
                 handler.post {
-                    context!!.sendBroadcast(Intent(ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(itemFile)))
+                    result.success(resultPaths)
                 }
             }
-            handler.post {
-                result.success(resultPaths)
-            }
+
+
         }
     }
 
