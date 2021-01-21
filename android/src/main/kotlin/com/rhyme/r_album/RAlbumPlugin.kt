@@ -62,7 +62,13 @@ public class RAlbumPlugin : FlutterPlugin, MethodCallHandler {
             return
         }
         thread {
-            val rootFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), albumName)
+            val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+            // Sometimes Pictures Directory is not yet created
+            if(!picturesDirectory.exists())
+                picturesDirectory.mkdirs()
+
+            val rootFile = File(picturesDirectory, albumName)
+            // Checking if desired album is created
             if (!rootFile.exists()) {
                 rootFile.mkdirs()
             }
